@@ -1,42 +1,46 @@
 package com.xyzbank.atm.atm_management_service.account;
 
 import com.xyzbank.atm.atm_management_service.transaction.Transaction;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Builder
 public class Account {
 
-    @Getter
-    @Setter
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
 
-    @Getter
+    @NotEmpty
     private volatile BigDecimal balance;
 
+    @NotEmpty
     private String currency;
 
     private LocalDateTime createdDate;
 
     private LocalDateTime updatedDate;
 
-    @Getter
     private List<Transaction> transactions;
 
-    @Getter
-    @Setter
+    @NotEmpty
     private Long userId;
 
-    @Setter
-    private AccountStatus accountStatus;
+    @Version
+    private Integer versionId;
 
-    public Account() {
-        balance = BigDecimal.ZERO;
-        accountStatus = AccountStatus.AVAILABLE;
-        transactions = Collections.emptyList();
-    }
+    @NotEmpty
+    private AccountStatus accountStatus;
 }

@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class AtmManagementServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AtmManagementServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(AtmManagementServiceApplication.class, args);
+    }
 
 }
