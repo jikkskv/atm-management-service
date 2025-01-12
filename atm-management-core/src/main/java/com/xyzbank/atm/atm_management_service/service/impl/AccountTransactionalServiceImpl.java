@@ -150,7 +150,7 @@ public class AccountTransactionalServiceImpl implements AccountTransactionalServ
                 boolean isOverFlow = remainingAmount.compareTo(debtBalance.getOutStandingBalance().abs()) < 0;
                 BigDecimal withDrawnAmount = isOverFlow ? remainingAmount : debtBalance.getOutStandingBalance().abs();
                 transfer(debtBalance.getFromAccountId(), debtBalance.getToAccountId(), withDrawnAmount, "");
-                debtBalanceDao.saveAndFlush(DebtBalance.buildDebtBalanceObject(debtBalance.getToAccountId(), debtBalance.getFromAccountId(), remainingAmount));
+                debtBalanceDao.saveAndFlush(DebtBalance.buildDebtBalanceObject(debtBalance.getToAccountId(), debtBalance.getFromAccountId(), withDrawnAmount));
                 remainingAmount = remainingAmount.subtract(withDrawnAmount);
                 if (isOverFlow) break;
             }

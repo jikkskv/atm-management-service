@@ -25,7 +25,7 @@ public class DebtRestructuringServiceImpl implements DebtRestructuringService {
         List<Long> userList = debtBalanceMap.keySet().stream().toList();
         List<BigDecimal> balanceList = userList.stream().map(debtBalanceMap::get).collect(Collectors.toList());
         List<List<Number>> optimizedTrans = new ArrayList<>();
-        optimizeDebtUsingDFS(balanceList, 0, optimizedTrans, new ArrayList<>());
+        optimizeDebtUsingBackTracking(balanceList, 0, userList, optimizedTrans, new ArrayList<>());
         saveOptimizedTrans(debtBalanceList.stream().map(DebtBalance::getDebtId).collect(Collectors.toSet()), optimizedTrans);
     }
 
@@ -47,7 +47,7 @@ public class DebtRestructuringServiceImpl implements DebtRestructuringService {
         return debtBalanceMap;
     }
 
-    private int optimizeDebtUsingDFS(List<BigDecimal> balanceList, int curPos, List<List<Number>> result, List<List<Number>> tempResult) {
+    private int optimizeDebtUsingBackTracking(List<BigDecimal> balanceList, int curPos, List<Long> userList, List<List<Number>> result, List<List<Number>> tempResult) {
         while (curPos < balanceList.size() && balanceList.get(curPos).compareTo(BigDecimal.ZERO) == 0) {
             curPos++;
         }
@@ -59,10 +59,10 @@ public class DebtRestructuringServiceImpl implements DebtRestructuringService {
         int minTransactions = Integer.MAX_VALUE;
         for (int idx = curPos + 1; idx < balanceList.size(); idx++) {
             if (balanceList.get(idx).multiply(balanceList.get(curPos)).compareTo(BigDecimal.ZERO) < 0) {
-                tempResult.add(List.of(curPos + 1, idx + 1, balanceList.get(curPos).abs().min(balanceList.get(idx).abs()).negate()));
+                tempResult.add(List.of(userList.get(curPos), userList.get(idx), balanceList.get(curPos).abs().min(balanceList.get(idx).abs()).negate()));
 
                 balanceList.set(idx, balanceList.get(idx).add(balanceList.get(curPos)));
-                int transactions = 1 + optimizeDebtUsingDFS(balanceList, curPos + 1, result, tempResult);
+                int transactions = 1 + optimizeDebtUsingBackTracking(balanceList, curPos + 1, userList, result, tempResult);
                 minTransactions = Math.min(minTransactions, transactions);
                 balanceList.set(idx, balanceList.get(idx).subtract(balanceList.get(curPos)));
 

@@ -19,8 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,7 +26,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -225,7 +222,7 @@ class AccountTransactionalServiceImplTest {
         doNothing().when(debtRestructuringService).restructureDebt();
 
         assertDoesNotThrow(() -> accountTransactionalService.transfer(fromAccountId, toAccountId, transferAmount, "transfer"));
-        verify(self, times(0)).performTransferOperationWithTransaction(fromAccount, toAccount,transferAmount,"");
+        verify(self, times(0)).performTransferOperationWithTransaction(fromAccount, toAccount, transferAmount, "");
     }
 
     @Test
@@ -238,7 +235,7 @@ class AccountTransactionalServiceImplTest {
         doNothing().when(debtRestructuringService).restructureDebt();
 
         assertDoesNotThrow(() -> accountTransactionalService.transfer(fromAccountId, toAccountId, transferAmount, "transfer"));
-        verify(self, times(1)).performTransferOperationWithTransaction(fromAccount, toAccount,transferAmount,"transfer");
+        verify(self, times(1)).performTransferOperationWithTransaction(fromAccount, toAccount, transferAmount, "transfer");
     }
 
     @Test
