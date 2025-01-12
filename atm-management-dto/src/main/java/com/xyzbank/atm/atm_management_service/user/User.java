@@ -1,9 +1,6 @@
 package com.xyzbank.atm.atm_management_service.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,16 +12,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Entity
+@Table(name = "ATM_User")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @NotEmpty
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "user_name")
     private String userName;
 
+    @Column(name = "password")
     private String password;
 }

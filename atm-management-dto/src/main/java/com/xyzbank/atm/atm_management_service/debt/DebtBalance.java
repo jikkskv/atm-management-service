@@ -1,10 +1,7 @@
 package com.xyzbank.atm.atm_management_service.debt;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,28 +19,48 @@ public class DebtBalance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "debt_id")
     private Long debtId;
 
-    @NotEmpty
+    @NotNull
+    @Column(name = "from_account_id", nullable = false)
     private Long fromAccountId;
 
-    @NotEmpty
+    @NotNull
+    @Column(name = "to_account_id", nullable = false)
     private Long toAccountId;
 
-    @NotEmpty
+    @NotNull
+    @Column(name = "original_amount", nullable = false, updatable = false)
     private BigDecimal originalAmount;
 
-    @NotEmpty
+    @NotNull
+    @Column(name = "outstanding_balance", nullable = false)
     private BigDecimal outStandingBalance;
 
     private LocalDateTime dueDate;
 
+    @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
+    @Column(name = "updated_date", nullable = false)
     private LocalDateTime updatedDate;
 
-    @NotEmpty
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "debt_status", nullable = false)
     private DebtStatus debtStatus;
 
-    private String remarks;
+    public static DebtBalance buildDebtBalanceObject(Long fromAccountId, Long toAccountId, BigDecimal debtAmount) {
+        return DebtBalance.builder()
+                .fromAccountId(fromAccountId)
+                .toAccountId(toAccountId)
+                .originalAmount(debtAmount.negate())
+                .outStandingBalance(debtAmount.negate())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
+                .dueDate(LocalDateTime.MAX)
+                .debtStatus(DebtStatus.PENDING)
+                .build();
+    }
 }

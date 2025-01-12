@@ -12,4 +12,6 @@ public interface AccountTransactionalService {
     void deposit(Long accountId, BigDecimal amount, String remarks) throws DepositOperationException;
 
     void withdraw(Long accountId, BigDecimal amount, String remarks) throws WithdrawOperationException;
+
+    void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String remarks) throws InvalidAccountException, TransferOperationException;
 }
