@@ -3,7 +3,9 @@ package com.xyzbank.atm.atm_management_service.service.impl;
 import com.xyzbank.atm.atm_management_service.account.Account;
 import com.xyzbank.atm.atm_management_service.account.AccountStatus;
 import com.xyzbank.atm.atm_management_service.dao.AccountDao;
+import com.xyzbank.atm.atm_management_service.dao.DebtBalanceDao;
 import com.xyzbank.atm.atm_management_service.dao.UserDao;
+import com.xyzbank.atm.atm_management_service.debt.DebtBalance;
 import com.xyzbank.atm.atm_management_service.exception.CancelAccountException;
 import com.xyzbank.atm.atm_management_service.exception.CreateAccountException;
 import com.xyzbank.atm.atm_management_service.exception.InvalidAccountException;
@@ -17,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,8 +37,12 @@ public class AccountCrudServiceImpl implements AccountCrudService {
     @Autowired
     private AccountDao accountDao;
 
+    @Autowired
+    private DebtBalanceDao debtBalanceDao;
+
+
     @Override
-    public Account createAccount(CreateAccountRequestModel createAccountRequest) throws CreateAccountException {
+    public Account getOrCreateAccount(CreateAccountRequestModel createAccountRequest) throws CreateAccountException {
         try {
             log.info("Start of validateAccountInfo, createAccountRequest: {}", createAccountRequest);
             boolean validationStatus = validateAccountInfo(createAccountRequest);
@@ -46,14 +54,14 @@ public class AccountCrudServiceImpl implements AccountCrudService {
                 }
                 return createdAccount;
             } else {
-                log.error("Error in createAccount, createAccountRequest: {}, invalid input", createAccountRequest);
+                log.error("Error in getOrCreateAccount, createAccountRequest: {}, invalid input", createAccountRequest);
                 throw new CreateAccountException("Invalid input for account creation");
             }
         } catch (CreateAccountException ex) {
-            log.error("Error in createAccount, createAccountRequest: {}, CreateAccountException", createAccountRequest, ex);
+            log.error("Error in getOrCreateAccount, createAccountRequest: {}, CreateAccountException", createAccountRequest, ex);
             throw new CreateAccountException(ex.getMessage());
         } catch (Exception ex) {
-            log.error("Error in createAccount, createAccountRequest: {}, Exception", createAccountRequest, ex);
+            log.error("Error in getOrCreateAccount, createAccountRequest: {}, Exception", createAccountRequest, ex);
             throw new CreateAccountException();
         }
     }
@@ -73,6 +81,8 @@ public class AccountCrudServiceImpl implements AccountCrudService {
         Account account = Account.builder()
                 .balance(BigDecimal.ZERO)
                 .currency(DEFAULT_CURRENCY)
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .userId(user.getId())
                 .accountStatus(AccountStatus.AVAILABLE)
                 .build();
@@ -114,12 +124,28 @@ public class AccountCrudServiceImpl implements AccountCrudService {
     }
 
     @Override
+    public Optional<User> getUser(Long accountId) {
+        Optional<Account> account = accountDao.findById(accountId);
+        return account.flatMap(value -> userDao.findById(value.getUserId()));
+    }
+
+    @Override
     public List<Transaction> getTransaction(AccountRequestModel accountRequestModel) throws InvalidAccountException {
         if (validateAccountRequestModel(accountRequestModel)) {
             Optional<Account> optionalAccount = getAccountAfterExistsCheck(accountRequestModel.name());
             return optionalAccount.orElseThrow(InvalidAccountException::new).getTransactions();
         }
         throw new InvalidAccountException();
+    }
+
+    @Override
+    public List<DebtBalance> getAllDebts(AccountRequestModel accountRequestModel) throws InvalidAccountException {
+        if (validateAccountRequestModel(accountRequestModel)) {
+            Optional<Account> optionalAccount = getAccountAfterExistsCheck(accountRequestModel.name());
+            Long accountId = optionalAccount.orElseThrow(InvalidAccountException::new).getAccountId();
+            return debtBalanceDao.findByFromAccountIdOrToAccountId(accountId, accountId);
+        }
+        return Collections.emptyList();
     }
 
     @Override

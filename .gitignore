@@ -34,3 +34,4 @@ build/
 /atm-management-service.jar
 /mvnw
 /mvnw.cmd
+/data/demo.mv.db

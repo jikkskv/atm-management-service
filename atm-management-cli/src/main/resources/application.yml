@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: atm-management-service
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: root
+    password: root
+    platform: h2
+  sql:
+    init:
+      mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      path: /h2-console
+      settings:
+        web-allow-others: false
+        trace: false
+      enabled: true
+
+
+logging:
+  level:
+    root: DEBUG

@@ -29,13 +29,7 @@ public interface AccountDao extends JpaRepository<Account, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Account a SET a.balance = :newBalance, a.versionId = a.versionId + 1, a.remarks = a.remarks " +
-            "WHERE a.accountId = :accountId AND a.versionId = :versionId")
-    int updateBalanceWithVersionAndRemarks(Long accountId, BigDecimal newBalance, Integer versionId, String remarks);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE Account a SET a.AccountStatus = :accountStatus, a.versionId = a.versionId + 1 " +
+    @Query("UPDATE Account a SET a.accountStatus = :accountStatus, a.versionId = a.versionId + 1 " +
             "WHERE a.accountId = :accountId AND a.versionId = :versionId")
     int updateAccountStatus(Long accountId, AccountStatus accountStatus, Integer versionId);
 
