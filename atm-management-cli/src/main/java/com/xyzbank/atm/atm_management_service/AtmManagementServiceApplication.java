@@ -2,10 +2,7 @@ package com.xyzbank.atm.atm_management_service;
 
 import com.xyzbank.atm.atm_management_service.account.Account;
 import com.xyzbank.atm.atm_management_service.debt.DebtBalance;
-import com.xyzbank.atm.atm_management_service.exception.CreateAccountException;
-import com.xyzbank.atm.atm_management_service.exception.DepositOperationException;
-import com.xyzbank.atm.atm_management_service.exception.InvalidAccountException;
-import com.xyzbank.atm.atm_management_service.exception.TransferOperationException;
+import com.xyzbank.atm.atm_management_service.exception.*;
 import com.xyzbank.atm.atm_management_service.model.AccountRequestModel;
 import com.xyzbank.atm.atm_management_service.model.CreateAccountRequestModel;
 import com.xyzbank.atm.atm_management_service.service.AccountCrudService;
@@ -79,16 +76,23 @@ public class AtmManagementServiceApplication implements CommandLineRunner {
                     performDepositOperation(inputStrArr);
                     break;
                 }
+                case "withdraw": {
+                    performWithdrawOperation(inputStrArr);
+                    break;
+                }
                 case "transfer": {
                     performTransferOperation(inputStrArr);
                     break;
                 }
                 case "logout": {
                     User currUser = accountState.getUser();
-                    accountState.setAccount(null);
-                    accountState.setUser(null);
-                    System.out.println(String.format(CommandLineInputText.EXIT_MESSAGE, currUser.getName()));
-                    break;
+                    if (Objects.isNull(currUser)) {
+                        System.out.println("No User is logged in!");
+                    } else {
+                        accountState.setAccount(null);
+                        accountState.setUser(null);
+                        System.out.println(String.format(CommandLineInputText.EXIT_MESSAGE, currUser.getName()));
+                    } break;
                 }
                 default: {
                     System.out.println("You have entered invalid Command!");
@@ -96,6 +100,25 @@ public class AtmManagementServiceApplication implements CommandLineRunner {
             }
         } catch (InvalidStdInputException ex) {
             System.out.println(ex.getMessage());
+        }
+    }
+
+    private void performWithdrawOperation(String[] inputStrArr) throws InvalidStdInputException {
+        Account currAccount = accountState.getAccount();
+        if (Objects.isNull(currAccount)) throw new InvalidStdInputException(CommandLineInputText.LOGIN_WARNING_MESSAGE);
+        if (inputStrArr.length != 2) throw new InvalidStdInputException();
+        try {
+            BigDecimal amount = new BigDecimal(inputStrArr[1]);
+            try {
+                accountTransactionalService.withdraw(currAccount.getAccountId(), amount, "");
+                displayBalance();
+                showDebt();
+            } catch (WithdrawOperationException ex) {
+                System.out.println(ex.getMessage());
+                log.error("Error occurred in deposit operation: {} with inputStrArr: ", Arrays.toString(inputStrArr), ex);
+            }
+        } catch (NumberFormatException ex) {
+            throw new InvalidStdInputException();
         }
     }
 
@@ -140,7 +163,8 @@ public class AtmManagementServiceApplication implements CommandLineRunner {
         if (inputStrArr.length != 3 || !StringUtils.hasLength(inputStrArr[1])) throw new InvalidStdInputException();
         try {
             Account toAccount = accountCrudService.getOrCreateAccount(new CreateAccountRequestModel(inputStrArr[1], "", ""));
-            if ((long) currAccount.getAccountId() == toAccount.getAccountId()) throw new InvalidStdInputException("Cannot transfer to same account");
+            if ((long) currAccount.getAccountId() == toAccount.getAccountId())
+                throw new InvalidStdInputException("Cannot transfer to same account");
             try {
                 BigDecimal amount = new BigDecimal(inputStrArr[2]);
                 accountTransactionalService.transfer(currAccount.getAccountId(), toAccount.getAccountId(), amount, "transfer");

@@ -117,7 +117,7 @@ class AccountCrudServiceImplTest {
     @Test
     void testGetOrCreateAccount_inValidName_exception() throws Exception {
         CreateAccountRequestModel requestModel = new CreateAccountRequestModel("", "username", "password");
-        assertThrows(CreateAccountException.class, ()->accountCrudService.getOrCreateAccount(requestModel));
+        assertThrows(CreateAccountException.class, () -> accountCrudService.getOrCreateAccount(requestModel));
 
         verify(accountDao, times(0)).findByUserId(eq(user.getId()));
         verify(accountDao, times(0)).saveAndFlush(any(Account.class));
